@@ -1,0 +1,12 @@
+import { Controller, Post, Body } from '@nestjs/common';
+import { TelemetryService } from './telemetry.service';
+
+@Controller('v1/telemetry')
+export class TelemetryController {
+  constructor(private readonly telemetryService: TelemetryService) {}
+
+  @Post()
+  ingest(@Body() payload: any) {
+    return this.telemetryService.ingest(payload);
+  }
+}
