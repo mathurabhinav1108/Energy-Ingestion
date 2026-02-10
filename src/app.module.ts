@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { TelemetryModule } from './telemetry/telemetry.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
@@ -6,6 +8,8 @@ import { AppService } from './app.service';
 
 @Module({
   imports: [
+    TelemetryModule, 
+    AnalyticsModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),
