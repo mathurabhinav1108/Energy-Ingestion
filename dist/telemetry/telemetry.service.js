@@ -28,16 +28,7 @@ let TelemetryService = class TelemetryService {
         this.vehicleLiveRepo = vehicleLiveRepo;
         this.meterLiveRepo = meterLiveRepo;
     }
-    async ingest(payload) {
-        if (payload.vehicleId) {
-            return this.handleVehicleTelemetry(payload);
-        }
-        if (payload.meterId) {
-            return this.handleMeterTelemetry(payload);
-        }
-        throw new common_1.BadRequestException('Invalid telemetry payload');
-    }
-    async handleVehicleTelemetry(data) {
+    async ingestVehicle(data) {
         const timestamp = new Date(data.timestamp);
         await this.vehicleHistoryRepo.insert({
             vehicleId: data.vehicleId,
@@ -55,7 +46,7 @@ let TelemetryService = class TelemetryService {
         }, ['vehicleId']);
         return { status: 'vehicle telemetry ingested' };
     }
-    async handleMeterTelemetry(data) {
+    async ingestMeter(data) {
         const timestamp = new Date(data.timestamp);
         await this.meterHistoryRepo.insert({
             meterId: data.meterId,

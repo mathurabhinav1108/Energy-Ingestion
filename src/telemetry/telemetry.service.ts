@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
@@ -7,6 +7,8 @@ import {
   VehicleLiveStatus,
   MeterLiveStatus,
 } from '../database/entities';
+import { VehicleTelemetryDto } from './dto/vehicle-telemetry.dto';
+import { MeterTelemetryDto } from './dto/meter-telemetry.dto';
 
 @Injectable()
 export class TelemetryService {
@@ -24,22 +26,10 @@ export class TelemetryService {
     private meterLiveRepo: Repository<MeterLiveStatus>,
   ) {}
 
-  async ingest(payload: any) {
-    if (payload.vehicleId) {
-      return this.handleVehicleTelemetry(payload);
-    }
-
-    if (payload.meterId) {
-      return this.handleMeterTelemetry(payload);
-    }
-
-    throw new BadRequestException('Invalid telemetry payload');
-  }
-
-  private async handleVehicleTelemetry(data: any) {
+  async ingestVehicle(data: VehicleTelemetryDto) {
     const timestamp = new Date(data.timestamp);
 
-    // 1️⃣ INSERT into history (cold)
+    // Cold path (INSERT)
     await this.vehicleHistoryRepo.insert({
       vehicleId: data.vehicleId,
       kwhDeliveredDc: data.kwhDeliveredDc,
@@ -48,7 +38,7 @@ export class TelemetryService {
       timestamp,
     });
 
-    // 2️⃣ UPSERT into live (hot)
+    // Hot path (UPSERT)
     await this.vehicleLiveRepo.upsert(
       {
         vehicleId: data.vehicleId,
@@ -63,10 +53,10 @@ export class TelemetryService {
     return { status: 'vehicle telemetry ingested' };
   }
 
-  private async handleMeterTelemetry(data: any) {
+  async ingestMeter(data: MeterTelemetryDto) {
     const timestamp = new Date(data.timestamp);
 
-    // 1️⃣ INSERT into history
+    // Cold path (INSERT)
     await this.meterHistoryRepo.insert({
       meterId: data.meterId,
       kwhConsumedAc: data.kwhConsumedAc,
@@ -74,7 +64,7 @@ export class TelemetryService {
       timestamp,
     });
 
-    // 2️⃣ UPSERT into live
+    // Hot path (UPSERT)
     await this.meterLiveRepo.upsert(
       {
         meterId: data.meterId,

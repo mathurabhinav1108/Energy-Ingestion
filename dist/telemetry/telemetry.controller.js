@@ -21,7 +21,13 @@ let TelemetryController = class TelemetryController {
         this.telemetryService = telemetryService;
     }
     ingest(payload) {
-        return this.telemetryService.ingest(payload);
+        if ('vehicleId' in payload) {
+            return this.telemetryService.ingestVehicle(payload);
+        }
+        if ('meterId' in payload) {
+            return this.telemetryService.ingestMeter(payload);
+        }
+        throw new common_1.BadRequestException('Invalid telemetry payload');
     }
 };
 exports.TelemetryController = TelemetryController;
